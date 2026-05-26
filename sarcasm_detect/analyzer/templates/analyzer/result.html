@@ -1,0 +1,162 @@
+{% extends 'analyzer/base.html' %}
+{% load static %}
+{% block title %}Result — SarcasmAI{% endblock %}
+{% block content %}
+
+{% if result.is_sarcastic %}
+<div class="verdict-banner sarcastic text-center p-5 mb-5 rounded-4">
+  <div class="verdict-icon mb-3">🎭</div>
+  <h1 class="display-4 fw-bold text-white mb-2">SARCASTIC</h1>
+  <p class="text-white-50 mb-4">The AI detected sarcasm in your content</p>
+  <div class="confidence-meter mx-auto" style="max-width:500px;">
+    <div class="progress" style="height:32px;border-radius:16px;">
+      <div class="progress-bar bg-danger fw-bold" style="width:{{ result.confidence }}%;font-size:1.1rem;">
+        {{ result.confidence|floatformat:1 }}% confident
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="verdict-banner sincere text-center p-5 mb-5 rounded-4">
+  <div class="verdict-icon mb-3">✅</div>
+  <h1 class="display-4 fw-bold text-white mb-2">NOT SARCASTIC</h1>
+  <p class="text-white-50 mb-4">The content appears to be sincere</p>
+  <div class="confidence-meter mx-auto" style="max-width:500px;">
+    <div class="progress" style="height:32px;border-radius:16px;">
+      <div class="progress-bar bg-success fw-bold" style="width:{{ result.confidence }}%;font-size:1.1rem;">
+        {{ result.confidence|floatformat:1 }}% confident
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+  <!-- Radar Chart -->
+  <div class="col-lg-5">
+    <div class="card border-0 h-100 shadow result-card">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-3">
+          <i class="fa fa-chart-pie me-2 text-warning"></i>Modality Breakdown
+        </h5>
+        <canvas id="radarChart" style="max-height:320px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Cards -->
+  <div class="col-lg-7">
+    <div class="row g-3">
+      {% for mr in modality_results %}
+      {% if mr.modality != 'claude' %}
+      <div class="col-sm-6">
+        <div class="card border-0 modality-card modality-{{ mr.modality }} shadow-sm h-100">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="fw-bold text-capitalize fs-5">
+                {% if mr.modality == 'text' %}<span class="modality-icon">📝</span>
+                {% elif mr.modality == 'image' %}<span class="modality-icon">🖼️</span>
+                {% elif mr.modality == 'emoji' %}<span class="modality-icon">😏</span>
+                {% else %}<span class="modality-icon">🤖</span>{% endif %}
+                {{ mr.modality|title }}
+              </span>
+              <span class="badge {% if mr.score > 0.5 %}bg-danger{% else %}bg-success{% endif %} fs-5 px-3 py-2">
+                {{ mr.score|floatformat:2 }}
+              </span>
+            </div>
+            <div class="progress mb-3" style="height:12px;border-radius:6px;">
+              <div class="progress-bar modality-bar-{{ mr.modality }}"
+                   style="width:{% widthratio mr.score 1 100 %}%;" role="progressbar"></div>
+            </div>
+            <div class="d-flex justify-content-between text-muted small">
+              <span><i class="fa fa-chart-simple me-1"></i>Confidence</span>
+              <span class="fw-medium">{{ mr.confidence|floatformat:1 }}%</span>
+            </div>
+            {% if mr.details.emojis_found %}
+            <div class="mt-2 pt-2 border-top border-secondary">
+              <small class="text-muted">
+                <i class="fa fa-face-smile me-1"></i>Found: {{ mr.details.emojis_found|join:" " }}
+              </small>
+            </div>
+            {% endif %}
+            {% if mr.details.matched_phrases %}
+            <div class="mt-2 pt-2 border-top border-secondary">
+              <small class="text-muted">
+                <i class="fa fa-quote-left me-1"></i>Matched: {{ mr.details.matched_phrases|join:", "|truncatechars:50 }}
+              </small>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Input Summary -->
+<div class="card border-0 mb-4 shadow result-card">
+  <div class="card-body p-4">
+    <h5 class="card-title mb-3">
+      <i class="fa fa-file-lines me-2 text-warning"></i>Analyzed Content
+    </h5>
+    {% if analysis.text_content %}
+    <div class="p-3 rounded-3 mb-3" style="background:rgba(0,0,0,0.2);">
+      <p class="mb-0" style="line-height:1.7;">{{ analysis.text_content|truncatechars:500 }}</p>
+    </div>
+    {% endif %}
+    <div class="d-flex flex-wrap gap-3 text-muted small">
+      <span><i class="fa fa-clock me-1"></i>{{ analysis.created_at }}</span>
+      {% if analysis.has_image %}
+      <span class="badge bg-purple-soft">🖼️ Image attached</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="d-flex gap-3 flex-wrap mb-5">
+  <a href="{% url 'analyze' %}" class="btn btn-warning btn-lg fw-bold shadow pulse-btn">
+    <i class="fa fa-plus me-2"></i>Analyze Another
+  </a>
+  <a href="{% url 'history' %}" class="btn btn-outline-secondary btn-lg">
+    <i class="fa fa-clock-rotate-left me-2"></i>View History
+  </a>
+  <button class="btn btn-outline-info btn-lg" onclick="loadAblation('{{ analysis.id }}')">
+    <i class="fa fa-flask me-1"></i>Ablation Study
+  </button>
+</div>
+
+<!-- Ablation section (loaded on demand) -->
+<div id="ablationSection" class="d-none mt-4 mb-5">
+  <div class="card border-0 shadow result-card">
+    <div class="card-body p-4">
+      <h5 class="card-title">
+        <i class="fa fa-flask me-2 text-info"></i>Modality Ablation Study
+      </h5>
+      <p class="text-muted small mb-3">
+        Shows how each modality contributes to the final verdict by removing one at a time.
+      </p>
+      <div id="ablationContent">
+        <div class="d-flex align-items-center gap-2">
+          <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+          <span class="text-muted">Loading ablation data...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const scores = {
+  text: {{ result.text_score }},
+  image: {{ result.image_score }},
+  emoji: {{ result.emoji_score }},
+};
+</script>
+<script src="{% static 'analyzer/js/result.js' %}?v=7"></script>
+{% endblock %}

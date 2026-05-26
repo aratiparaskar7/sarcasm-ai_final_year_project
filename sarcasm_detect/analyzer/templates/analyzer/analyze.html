@@ -1,0 +1,146 @@
+{% extends 'analyzer/base.html' %}
+{% load static %}
+{% block title %}Analyze — SarcasmAI{% endblock %}
+{% block content %}
+
+<div class="text-center mb-4">
+  <h2 class="fw-bold">
+    <i class="fa fa-magnifying-glass-chart me-2 text-warning"></i>Analyze Content
+  </h2>
+  <p class="text-muted">Enter text in any language, add emojis, or upload an image</p>
+</div>
+
+<div class="row justify-content-center">
+<div class="col-lg-8">
+<div class="card border-0 shadow-lg analyze-card">
+  <div class="card-body p-4 p-md-5">
+
+    <form id="analyzeForm" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- TEXT INPUT -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold fs-5 d-flex align-items-center gap-2">
+          <span style="color:#4361ee;">📝</span> Text
+          <span class="badge bg-dark fw-normal ms-auto">
+            <i class="fa fa-globe me-1"></i>Multi-language
+          </span>
+        </label>
+        <textarea class="form-control bg-dark text-light" id="textInput" name="text"
+          rows="5" maxlength="5000"
+          placeholder="Type or paste text here... 🙄&#10;&#10;Try: &quot;Oh great, another meeting!&quot;&#10;Or: &quot;वाह! क्या टैलेंट है!&quot;"
+          style="font-size:1.05rem;line-height:1.7;resize:vertical;"></textarea>
+        <div class="d-flex justify-content-between mt-2">
+          <small class="text-muted">
+            <i class="fa fa-language me-1"></i>English, हिन्दी, Español, 中文...
+          </small>
+          <small class="text-muted">
+            <span id="charCount">0</span> / 5000
+          </small>
+        </div>
+      </div>
+
+      <!-- Emoji live preview -->
+      <div id="emojiPreview" class="d-none mb-4 p-3 rounded-3 emoji-preview-box">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-warning fw-semibold">
+            <i class="fa fa-face-smile me-1"></i>Detected Emojis
+          </span>
+          <span id="emojiList" class="fs-4"></span>
+        </div>
+      </div>
+
+      <!-- IMAGE UPLOAD -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold fs-5 d-flex align-items-center gap-2">
+          <span style="color:#7209b7;">🖼️</span> Image
+          <span class="badge bg-dark fw-normal ms-auto">Optional</span>
+        </label>
+        <div class="drop-zone" id="imageDropZone">
+          <i class="fa fa-cloud-arrow-up fa-3x mb-3 text-muted"></i>
+          <p class="text-light mb-2 fw-medium">Drag & drop or click to upload</p>
+          <p class="text-muted small mb-3">JPEG, PNG, GIF, WebP (max 100 MB)</p>
+          <input type="file" id="imageInput" name="image" accept="image/*" class="d-none">
+          <button type="button" class="btn btn-outline-warning btn-sm px-4" onclick="document.getElementById('imageInput').click()">
+            <i class="fa fa-folder-open me-1"></i>Browse Files
+          </button>
+        </div>
+        <div id="imagePreviewContainer" class="d-none mt-3 text-center position-relative">
+          <img id="imagePreview" class="img-fluid rounded-3 shadow" style="max-height:300px;border:2px solid rgba(114,9,183,0.3);">
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle" 
+                  id="removeImage" title="Remove image" style="width:32px;height:32px;">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <hr class="border-secondary my-4">
+
+      <!-- SUBMIT -->
+      <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+        <button type="submit" class="btn btn-warning btn-lg fw-bold px-5 shadow pulse-btn" id="submitBtn">
+          <i class="fa fa-bolt me-2"></i>Analyze Now
+        </button>
+        <button type="reset" class="btn btn-outline-secondary btn-lg px-4" id="resetBtn">
+          <i class="fa fa-rotate-left me-2"></i>Clear All
+        </button>
+      </div>
+
+      <div class="text-center mt-4">
+        <small class="text-muted">
+          <i class="fa fa-clock me-1"></i>Analysis takes 3–10 seconds
+        </small>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Example buttons -->
+<div class="card border-0 mt-4 examples-card">
+  <div class="card-body p-4">
+    <p class="text-light small mb-3 fw-semibold">
+      <i class="fa fa-lightbulb text-warning me-2"></i>Try these examples:
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-sm example-btn" data-text="Oh great, another Monday morning 🙄">
+        Oh great, another Monday 🙄
+      </button>
+      <button class="btn btn-sm example-btn" data-text="वाह! क्या टैलेंट है! 👏😂">
+        वाह! क्या टैलेंट है! 👏😂
+      </button>
+      <button class="btn btn-sm example-btn" data-text="Yeah right, like that's ever going to work 🤣">
+        Yeah right... 🤣
+      </button>
+      <button class="btn btn-sm example-btn" data-text="Thanks for nothing, really appreciate your help 🙃">
+        Thanks for nothing 🙃
+      </button>
+      <button class="btn btn-sm example-btn" data-text="I love how you always know best 😏">
+        I love how you... 😏
+      </button>
+      <button class="btn btn-sm example-btn" data-text="What a surprise, the project is delayed again!">
+        What a surprise!
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="d-none">
+  <div class="loading-content">
+    <div class="loading-spinner"></div>
+    <h4 class="text-light mb-2">Analyzing...</h4>
+    <p id="loadingStepText">Processing your content</p>
+    <div id="loadingProgress" class="progress mx-auto">
+      <div class="progress-bar bg-warning" style="width: 0%"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'analyzer/js/analyze.js' %}"></script>
+{% endblock %}

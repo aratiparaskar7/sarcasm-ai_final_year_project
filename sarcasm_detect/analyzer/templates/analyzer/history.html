@@ -1,0 +1,141 @@
+{% extends 'analyzer/base.html' %}
+{% load static %}
+{% block title %}History — SarcasmAI{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="mb-1">
+      <i class="fa fa-clock-rotate-left me-2 text-warning"></i>Analysis History
+    </h2>
+    <p class="text-muted small mb-0">View and manage your past sarcasm analyses</p>
+  </div>
+  <a href="{% url 'analyze' %}" class="btn btn-warning fw-bold shadow pulse-btn">
+    <i class="fa fa-plus me-1"></i>New Analysis
+  </a>
+</div>
+
+<!-- Search & Filter Row -->
+<div class="card border-0 mb-4 p-3" style="background:rgba(30,32,48,0.7);">
+  <div class="row g-3 align-items-center">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary text-muted">
+          <i class="fa fa-search"></i>
+        </span>
+        <input type="text" id="searchInput" class="form-control bg-dark text-light border-secondary"
+               placeholder="Search by text content...">
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="btn-group w-100" id="filterBtns" role="group">
+        <button class="btn btn-outline-secondary active" data-filter="all">
+          <i class="fa fa-list me-1"></i>All
+        </button>
+        <button class="btn btn-outline-danger" data-filter="sarcastic">
+          🎭 Sarcastic
+        </button>
+        <button class="btn btn-outline-success" data-filter="sincere">
+          ✅ Sincere
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if analyses %}
+<div class="card border-0 shadow" style="background:rgba(30,32,48,0.7);border-radius:1rem;overflow:hidden;">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0" id="historyTable">
+      <thead>
+        <tr style="background:rgba(255,214,10,0.1);">
+          <th class="ps-4">Date</th>
+          <th>Content</th>
+          <th class="text-center">Media</th>
+          <th class="text-center">Verdict</th>
+          <th class="text-center">Confidence</th>
+          <th class="text-center pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in analyses %}
+        <tr class="history-row" id="row-{{ a.id }}" data-verdict="{% if a.result.is_sarcastic %}sarcastic{% else %}sincere{% endif %}">
+          <td class="text-muted small ps-4" style="white-space:nowrap;">
+            <i class="fa fa-calendar me-1"></i>{{ a.created_at|date:"M j, Y" }}<br>
+            <span class="text-muted" style="font-size:0.75rem;">{{ a.created_at|date:"H:i" }}</span>
+          </td>
+          <td>
+            <span class="text-truncate d-inline-block text-light" style="max-width:280px;font-size:0.95rem;">
+              {{ a.text_content|default:"(no text)"|truncatechars:80 }}
+            </span>
+          </td>
+          <td class="text-center">
+            {% if a.has_image %}
+            <span class="badge bg-dark" title="Image attached">🖼️ Image</span>
+            {% else %}
+            <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if a.result %}
+              {% if a.result.is_sarcastic %}
+                <span class="badge bg-danger px-3 py-2">🎭 Sarcastic</span>
+              {% else %}
+                <span class="badge bg-success px-3 py-2">✅ Sincere</span>
+              {% endif %}
+            {% else %}
+              <span class="badge bg-secondary">Pending</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if a.result %}
+            <div class="d-flex align-items-center justify-content-center gap-2">
+              <div class="progress" style="width:60px;height:8px;border-radius:4px;">
+                <div class="progress-bar {% if a.result.is_sarcastic %}bg-danger{% else %}bg-success{% endif %}"
+                     style="width:{{ a.result.confidence }}%;"></div>
+              </div>
+              <small class="text-light fw-medium">{{ a.result.confidence|floatformat:0 }}%</small>
+            </div>
+            {% endif %}
+          </td>
+          <td class="text-center pe-4">
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'result' a.id %}" class="btn btn-outline-warning" title="View Details">
+                <i class="fa fa-eye"></i>
+              </a>
+              <button class="btn btn-outline-danger" onclick="deleteAnalysis('{{ a.id }}', this)" title="Delete">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="text-center mt-4">
+  <small class="text-muted">
+    Showing {{ analyses|length }} most recent analyses
+  </small>
+</div>
+
+{% else %}
+<div class="card border-0 text-center py-5" style="background:rgba(30,32,48,0.7);">
+  <div class="card-body">
+    <div class="mb-4" style="font-size:4rem;">📭</div>
+    <h4 class="text-light mb-2">No analyses yet</h4>
+    <p class="text-muted mb-4">Start by analyzing some content for sarcasm</p>
+    <a href="{% url 'analyze' %}" class="btn btn-warning btn-lg fw-bold shadow pulse-btn">
+      <i class="fa fa-bolt me-2"></i>Run Your First Analysis
+    </a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'analyzer/js/history.js' %}?v=4"></script>
+{% endblock %}

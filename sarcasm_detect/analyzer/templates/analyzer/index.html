@@ -1,0 +1,141 @@
+{% extends 'analyzer/base.html' %}
+{% block title %}SarcasmAI — Multimodal Sarcasm Detection{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<div class="hero-section text-center py-5 mb-5">
+  <div class="hero-icon mb-3">🎭</div>
+  <h1 class="display-4 fw-bold mb-3">
+    <span class="text-warning">Detect Sarcasm</span> with AI
+  </h1>
+  <p class="lead text-muted mb-2" style="max-width:680px;margin:auto;">
+    Advanced multimodal AI combining <strong class="text-light">RoBERTa NLP</strong>, 
+    <strong class="text-light">CLIP Vision</strong> &amp; <strong class="text-light">Claude AI</strong> 
+    to detect sarcasm in text, emojis, and images.
+  </p>
+  <p class="text-muted mb-4 small">
+    <i class="fa fa-globe me-1"></i>Supports English, हिन्दी, Español, Français, Deutsch, 中文, العربية and more
+  </p>
+  <div class="d-flex justify-content-center gap-3 flex-wrap">
+    <a href="{% url 'analyze' %}" class="btn btn-warning btn-lg px-5 fw-bold shadow pulse-btn">
+      <i class="fa fa-bolt me-2"></i>Try It Now
+    </a>
+    <a href="{% url 'history' %}" class="btn btn-outline-secondary btn-lg px-4">
+      <i class="fa fa-clock-rotate-left me-2"></i>View History
+    </a>
+  </div>
+</div>
+
+<!-- Feature Cards -->
+<div class="row g-4 mb-5 justify-content-center">
+  <div class="col-sm-6 col-lg-4">
+    <div class="card h-100 border-0 feature-card">
+      <div class="card-body text-center p-4">
+        <div class="feature-icon" style="color:#4361ee;">📝</div>
+        <h5 class="card-title fw-bold" style="color:#4361ee;">Text Analysis</h5>
+        <p class="card-text text-muted small mb-0">
+          RoBERTa transformer model + 60+ linguistic patterns across 6 languages. 
+          Catches subtle sarcasm cues like irony markers and contradictions.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <div class="card h-100 border-0 feature-card">
+      <div class="card-body text-center p-4">
+        <div class="feature-icon" style="color:#f8961e;">😏</div>
+        <h5 class="card-title fw-bold" style="color:#f8961e;">Emoji Intelligence</h5>
+        <p class="card-text text-muted small mb-0">
+          Smart emoji sentiment scoring — 🙄 eye-roll scores 0.90, 🙃 upside-down 0.85.
+          Auto-extracted from your text in real-time.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <div class="card h-100 border-0 feature-card">
+      <div class="card-body text-center p-4">
+        <div class="feature-icon" style="color:#7209b7;">🖼️</div>
+        <h5 class="card-title fw-bold" style="color:#7209b7;">Image Vision</h5>
+        <p class="card-text text-muted small mb-0">
+          CLIP ViT-B/32 vision model analyzes memes, screenshots, and images 
+          for visual sarcasm indicators.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- How It Works -->
+<div class="text-center mb-5">
+  <h3 class="fw-bold mb-4">
+    <i class="fa fa-wand-magic-sparkles me-2 text-warning"></i>How It Works
+  </h3>
+  <div class="row g-4 justify-content-center">
+    <div class="col-sm-4 col-lg-3">
+      <div class="step-card p-4 rounded-3">
+        <div class="step-number">1</div>
+        <h6 class="fw-bold mt-3 mb-2">Input</h6>
+        <p class="text-muted small mb-0">Enter text in any language, add emojis, or upload an image</p>
+      </div>
+    </div>
+    <div class="col-sm-4 col-lg-3">
+      <div class="step-card p-4 rounded-3">
+        <div class="step-number">2</div>
+        <h6 class="fw-bold mt-3 mb-2">Analyze</h6>
+        <p class="text-muted small mb-0">AI models process each modality independently with ML</p>
+      </div>
+    </div>
+    <div class="col-sm-4 col-lg-3">
+      <div class="step-card p-4 rounded-3">
+        <div class="step-number">3</div>
+        <h6 class="fw-bold mt-3 mb-2">Result</h6>
+        <p class="text-muted small mb-0">Scores fused for final sarcasm verdict with confidence %</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="text-center py-4 mb-4">
+  <div class="row justify-content-center g-4">
+    <div class="col-6 col-md-auto">
+      <div class="stat-card p-4 px-md-5 rounded-3">
+        <div class="h2 fw-bold text-warning mb-1">{{ total_analyses }}</div>
+        <div class="text-muted small">Total Analyses</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-auto">
+      <div class="stat-card p-4 px-md-5 rounded-3">
+        <div class="h2 fw-bold text-danger mb-1">{{ sarcastic_count }}</div>
+        <div class="text-muted small">Sarcasm Detected</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-auto">
+      <div class="stat-card p-4 px-md-5 rounded-3">
+        <div class="h2 fw-bold text-info mb-1">3</div>
+        <div class="text-muted small">AI Modalities</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-auto">
+      <div class="stat-card p-4 px-md-5 rounded-3">
+        <div class="h2 fw-bold text-success mb-1">6+</div>
+        <div class="text-muted small">Languages</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tech Stack -->
+<div class="text-center py-4">
+  <p class="text-muted small mb-3">Powered by</p>
+  <div class="d-flex justify-content-center gap-4 flex-wrap">
+    <span class="badge bg-dark px-3 py-2"><i class="fab fa-python me-1"></i>Python</span>
+    <span class="badge bg-dark px-3 py-2"><i class="fa fa-fire me-1"></i>PyTorch</span>
+    <span class="badge bg-dark px-3 py-2">🤗 Transformers</span>
+    <span class="badge bg-dark px-3 py-2"><i class="fa fa-brain me-1"></i>CLIP</span>
+    <span class="badge bg-dark px-3 py-2"><i class="fab fa-python me-1"></i>Django</span>
+  </div>
+</div>
+
+{% endblock %}
