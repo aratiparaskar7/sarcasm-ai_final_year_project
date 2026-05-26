@@ -14,8 +14,6 @@ SarcasmAI is a multi-modal sarcasm detection system designed to identify sarcast
 
 - **Text Analysis**: RoBERTa-based irony detection
 - **Image Analysis**: CLIP vision-language understanding
-- **Audio Analysis**: Whisper transcription + acoustic features
-- **Video Analysis**: Frame sampling with CLIP analysis
 - **Emoji Detection**: Rule-based sentiment mapping
 - **AI Reasoning**: Claude 3.5 Haiku for contextual analysis
 
@@ -55,7 +53,6 @@ SarcasmAI is a multi-modal sarcasm detection system designed to identify sarcast
 | **REST API** | Django REST Framework | API endpoints |
 | **Text Models** | RoBERTa-base | Twitter-trained irony detection |
 | **Vision Models** | CLIP ViT-B/32 | Vision-language encoding |
-| **Audio Models** | Whisper-base | Speech-to-text transcription |
 | **ML Framework** | PyTorch 2.6+ | Deep learning backend |
 | **AI Reasoning** | Anthropic Claude 3.5 | Optional semantic analysis |
 | **Frontend** | Bootstrap 5.3 + Vanilla JS | UI/UX |
